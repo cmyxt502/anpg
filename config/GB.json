@@ -88,7 +88,7 @@
             "background_colour": [18, 50, 147, 255],
             "text": "GB",
             "text_colour": [255, 255, 255, 0],
-            "text_placement": [2, 1.5],
+            "text_placement": [2, 1.3],
             "icon": "EU_star"
         },
         "pre_brexit_uk": {
@@ -117,8 +117,8 @@
         },
         "ev": {
             "display_name": "Electric Vehicle",
-            "background_colour": [244, 244, 244, 0],
-            "text": "NA",
+            "background_colour": [0, 255, 0, 255],
+            "text": "",
             "text_colour": [255, 255, 255, 0],
             "text_placement": [2, 1.5],
             "icon": "1"

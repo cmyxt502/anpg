@@ -88,7 +88,7 @@
             "background_colour": [18, 50, 147, 255],
             "text": "GB",
             "text_colour": [255, 255, 255, 0],
-            "text_placement": [1, 0.25],
+            "text_placement": [2, 1.5],
             "icon": "EU_star"
         },
         "pre_brexit_uk": {
@@ -96,7 +96,7 @@
             "background_colour": [244, 244, 244, 255],
             "text": "UK",
             "text_colour": [255, 255, 255, 0],
-            "text_placement": [1, 0.75],
+            "text_placement": [2, 1.5],
             "icon": "EU_star"
         },
         "post_brexit_gb": {
@@ -104,7 +104,7 @@
             "background_colour": [244, 244, 244, 255],
             "text": "GB",
             "text_colour": [255, 255, 255, 0],
-            "text_placement": [1, 0.75],
+            "text_placement": [2, 1.5],
             "icon": "GB_flag"
         },
         "post_brexit_uk": {
@@ -112,16 +112,16 @@
             "background_colour": [244, 244, 244, 255],
             "text": "UK",
             "text_colour": [255, 255, 255, 0],
-            "text_placement": [1, 0.75],
+            "text_placement": [2, 1.5],
             "icon": "GB_flag"
         },
         "ev": {
             "display_name": "Electric Vehicle",
-            "background_colour": [244, 244, 244, 255],
-            "text": "",
+            "background_colour": [244, 244, 244, 0],
+            "text": "NA",
             "text_colour": [255, 255, 255, 0],
-            "text_placement": [1, 0.75],
-            "icon": ""
+            "text_placement": [2, 1.5],
+            "icon": "1"
         }
     }
 }

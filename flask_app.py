@@ -2,7 +2,7 @@
 from flask import Flask, request, jsonify, send_file
 from PIL import Image, ImageDraw, ImageFont
 import os, sys, json
-import splitText
+import splitPlateNum
 
 app = Flask(__name__)
 
@@ -24,7 +24,7 @@ def addContent(currentPlate, msgMain, msgAlt, plateConfig, countryConfig, badgeC
 
     #Check if single row or double row
     if plateConfig['split']:
-        msgFirst, msgNext = splitText.splitText(msgMain)
+        msgFirst, msgNext = splitPlateNum.split(msgMain)
         msgFirstSize = font.getsize(msgFirst)
         msgNextSize = font.getsize(msgNext)
 

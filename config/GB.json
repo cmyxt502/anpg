@@ -1,0 +1,127 @@
+{
+    "display_name": "United Kingdom",
+    "ISO_code": "GB", 
+
+    "background": {
+        "colour":{
+            "front": [244, 244, 244, 255],
+            "rear": [239, 220, 4, 255]
+        }
+    },
+
+    "text": {
+        "colour": {
+            "front": [0, 0, 0],
+            "rear": [0, 0, 0]
+        }
+    },
+
+    "text_font": "GB.ttf",
+
+    "plate_sizes": {
+        "square_topbadge": {
+            "display_name": "Square, with badge at the top-left corner",
+            "width": 570,
+            "height": 406,
+            "text_size": 222,
+            "corner_radius": 15,
+            "rows":2,
+            "badge":{
+                "width":92,
+                "height":203,
+                "starting_position": [0,0],
+                "text_size": 50,
+                "icon_size": 50
+            }
+        },
+        "square_fullbadge": {
+            "display_name": "Square, with badge in full height at the left",
+            "width": 570,
+            "height": 406,
+            "text_size": 222,
+            "corner_radius": 15,
+            "rows":2,
+            "badge":{
+                "width":92,
+                "height":406,
+                "starting_position": [0,0],
+                "text_size": 50,
+                "icon_size": 50
+            }
+        },
+        "square_lowerbadge": {
+            "display_name": "Square, with badge at the lower-left corner",
+            "width": 570,
+            "height": 406,
+            "text_size": 222,
+            "corner_radius": 15,
+            "rows":2,
+            "badge":{
+                "width":92,
+                "height":203,
+                "starting_position": [0,203],
+                "text_size": 50,
+                "icon_size": 50
+            }
+        },
+        "oblong": {
+            "display_name": "Oblong",
+            "width": 1040,
+            "height": 222,
+            "text_size": 222,
+            "corner_radius": 15,
+            "rows":1,
+            "badge":{
+                "width":92,
+                "height":222,
+                "starting_position": [0,0],
+                "text_size": 50,
+                "icon_size": 50
+            }
+        }
+        
+    },
+
+    "badges": {
+        "pre_brexit_gb": {
+            "display_name": "GB Badge, Pre-Brexit",
+            "background_colour": [18, 50, 147, 255],
+            "text": "GB",
+            "text_colour": [255, 255, 255, 0],
+            "text_placement": [1, 0.25],
+            "icon": "EU_star"
+        },
+        "pre_brexit_uk": {
+            "display_name": "UK Badge, Pre-Brexit",
+            "background_colour": [244, 244, 244, 255],
+            "text": "UK",
+            "text_colour": [255, 255, 255, 0],
+            "text_placement": [1, 0.75],
+            "icon": "EU_star"
+        },
+        "post_brexit_gb": {
+            "display_name": "GB Badge, Post-Brexit",
+            "background_colour": [244, 244, 244, 255],
+            "text": "GB",
+            "text_colour": [255, 255, 255, 0],
+            "text_placement": [1, 0.75],
+            "icon": "GB_flag"
+        },
+        "post_brexit_uk": {
+            "display_name": "UK Badge, Post-Brexit",
+            "background_colour": [244, 244, 244, 255],
+            "text": "UK",
+            "text_colour": [255, 255, 255, 0],
+            "text_placement": [1, 0.75],
+            "icon": "GB_flag"
+        },
+        "ev": {
+            "display_name": "Electric Vehicle",
+            "background_colour": [244, 244, 244, 255],
+            "text": "",
+            "text_colour": [255, 255, 255, 0],
+            "text_placement": [1, 0.75],
+            "icon": ""
+        }
+    }
+}

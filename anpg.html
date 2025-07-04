@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ANPG</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2em;
+      background-color: #f4f4f4;
+    }
+    label {
+      display: block;
+      margin-top: 1em;
+    }
+    input, select, button {
+      padding: 0.5em;
+      margin-top: 0.2em;
+    }
+    #image-container {
+      margin-top: 2em;
+    }
+    img {
+      border: 1px solid #ccc;
+      max-width: 100%;
+    }
+    .loading {
+      font-style: italic;
+      color: #555;
+      margin-top: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Automatic Number Plate Generator</h1>
+
+  <form id="plateForm">
+    <label>
+      Country:
+      <select name="country" id="countrySelect" required>
+        <option disabled selected value="">Loading countries...</option>
+      </select>
+    </label>
+
+    <label>
+      Plate Number:
+      <input type="text" name="plateNum" placeholder="10 characters or less" required>
+    </label>
+
+    <label>
+      Side:
+      <select name="side">
+        <option value="front">Front</option>
+        <option value="rear">Rear</option>
+      </select>
+    </label>
+
+    <label>
+      Size:
+      <select name="size" id="sizeSelect" required>
+        <option disabled selected value="">Select a country first</option>
+      </select>
+    </label>
+
+    <label>
+      Badge:
+      <select name="badge" id="badgeSelect" required>
+        <option disabled selected value="">Select a country first</option>
+      </select>
+    </label>
+
+    <button type="submit">Generate Plate</button>
+    <p>Right click or long press to save the image. If the image fails to generate, click the <b>Generate Plate</b> button again.</p>
+  </form>
+
+  <div id="image-container" class="loading"></div>
+
+  <script>
+    const countrySelect = document.getElementById('countrySelect');
+    const sizeSelect = document.getElementById('sizeSelect');
+    const imageContainer = document.getElementById('image-container');
+
+    // Load countries on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetch('https://britem.eu.pythonanywhere.com/loadCountries')
+        .then(response => response.json())
+        .then(countries => {
+          countrySelect.innerHTML = '<option disabled selected value="">Select a country</option>';
+          countries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country.iso_code; // Use iso_code as value
+            option.textContent = country.display_name;
+            countrySelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          countrySelect.innerHTML = '<option disabled>Error loading countries</option>';
+          console.error('Failed to load countries:', error);
+        });
+    });
+
+    // Load sizes when a valid country is selected
+    countrySelect.addEventListener('change', () => {
+      const selectedCountry = countrySelect.value;
+
+      if (!selectedCountry) {
+        sizeSelect.innerHTML = '<option disabled selected>Select a valid country first</option>';
+        badgeSelect.innerHTML = '<option disabled selected>Select a valid country first</option>';
+        return;
+      }
+
+      sizeSelect.innerHTML = '<option disabled selected>Loading sizes...</option>';
+      badgeSelect.innerHTML = '<option disabled selected>Loading badges...</option>';
+
+      fetch(`https://britem.eu.pythonanywhere.com/loadSizes?country=${encodeURIComponent(selectedCountry)}`)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .then(sizes => {
+          sizeSelect.innerHTML = '';
+          sizes.forEach(size => {
+            const option = document.createElement('option');
+            option.value = size.size_name;
+            option.textContent = size.display_name;
+            sizeSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          sizeSelect.innerHTML = '<option disabled>Error loading sizes</option>';
+          console.error('Failed to load sizes:', error);
+        });
+
+        fetch(`https://britem.eu.pythonanywhere.com/loadBadges?country=${encodeURIComponent(selectedCountry)}`)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .then(badges => {
+          badgeSelect.innerHTML = '';
+          badges.forEach(badge => {
+            const option = document.createElement('option');
+            option.value = badge.badge_name;
+            option.textContent = badge.display_name;
+            badgeSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          badgeSelect.innerHTML = '<option disabled>Error loading badges</option>';
+          console.error('Failed to load badges:', error);
+        });
+    });
+
+    // Handle form submission
+    document.getElementById('plateForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const form = event.target;
+      const formData = new FormData(form);
+      const country = formData.get('country');
+      const size = formData.get('size');
+
+      if (!country || !size) {
+        alert('Please select a valid country and size.');
+        return;
+      }
+
+      const params = new URLSearchParams(formData).toString();
+      const apiUrl = `https://britem.eu.pythonanywhere.com/newPlate?${params}`;
+
+      imageContainer.innerHTML = '<p class="loading">Generating image, please wait...</p>';
+
+      // Delay image load for server processing
+      setTimeout(() => {
+        const img = document.createElement('img');
+        img.src = apiUrl + `&t=${Date.now()}`; // prevent caching
+        img.alt = 'Generated Plate';
+
+        imageContainer.innerHTML = '';
+        imageContainer.appendChild(img);
+      }, 5000); // 5-second delay
+    });
+  </script>
+</body>
+</html>

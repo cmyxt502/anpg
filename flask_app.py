@@ -1,143 +1,96 @@
-
 from flask import Flask, request, jsonify, send_file
-from PIL import Image, ImageDraw, ImageFont
+from flask_cors import cross_origin
 import os, sys, json
-import splitPlateNum
+import generate
 
 app = Flask(__name__)
 
-#msgAlt not implemented yet
-def addContent(currentPlate, msgMain, msgAlt, plateConfig, countryConfig, badgeChoice):
-
-    #Prepopulate config
-    plateWidth = plateConfig["width"]
-    plateHeight = plateConfig["height"]
-    fontSize = plateConfig["fontSize"]
-    badgeAreaWidth = plateConfig["badgeWidth"]
-    badgeAreaHeight = plateConfig["badgeHeight"]
-    verticalOffset = plateConfig["verticalOffset"]
-
-    fontFile = countryConfig["fontFile"]
-
-    font = ImageFont.truetype(os.path.join(sys.path[0], fontFile), fontSize)
-    draw = ImageDraw.Draw(currentPlate)
-
-    #Check if single row or double row
-    if plateConfig['split']:
-        msgFirst, msgNext = splitPlateNum.split(msgMain)
-        msgFirstSize = font.getsize(msgFirst)
-        msgNextSize = font.getsize(msgNext)
-
-        if badgeChoice == "none":
-            x1 = (plateWidth - msgFirstSize[0]) / 2
-            x2 = (plateWidth - msgNextSize[0]) / 2
-        else:
-            x1 = (plateWidth + badgeAreaWidth - msgFirstSize[0]) / 2
-            x2 = (plateWidth + badgeAreaWidth - msgNextSize[0]) / 2
-            badgeFile = os.path.join(os.path.join(sys.path[0], "badge"), badgeChoice) + ".png"
-            badge = Image.open(badgeFile, 'r')
-            #Resize badge
-            badgeTrueWidth = badgeAreaWidth
-            badgeTrueHeight = int(badge.size[1]*(badgeAreaWidth / float(badge.size[0])))
-            badge = badge.resize((badgeTrueWidth, badgeTrueHeight))
-            #Get badge background colour
-            badgeBGColour = badge.getpixel((5,5))
-            #Draw background
-            draw.rectangle((0, 0, badgeAreaWidth, badgeAreaHeight), fill=badgeBGColour)
-            #Paste badge
-            currentPlate.paste(badge, (0, int((badgeAreaHeight - badgeTrueHeight) / 2)))
-
-        y1 = (plateHeight - msgFirstSize[1]) / 2 - verticalOffset
-        y2 = (plateHeight - msgNextSize[1]) / 2 + verticalOffset
-        #Add text
-        draw.text((x1, y1), msgFirst, font=font, fill=(0, 0, 0))
-        draw.text((x2, y2), msgNext, font=font, fill=(0, 0, 0))
-
-    else:
-        msgSize = font.getsize(msgMain)
-
-        #Check and add badge
-        if badgeChoice == "none":
-            x = (plateWidth - msgSize[0]) / 2
-        else:
-            x = (plateWidth + badgeAreaWidth - msgSize[0]) / 2
-            badgeFile = os.path.join(os.path.join(sys.path[0], "badge"), badgeChoice) + ".png"
-            badge = Image.open(badgeFile, 'r')
-            #Resize badge
-            badgeTrueWidth = badgeAreaWidth
-            badgeTrueHeight = int(badge.size[1]*(badgeAreaWidth / float(badge.size[0])))
-            badge = badge.resize((badgeTrueWidth, badgeTrueHeight))
-            #Get badge background colour
-            badgeBGColour = badge.getpixel((5,5))
-            #Draw background
-            draw.rectangle((0, 0, badgeAreaWidth, badgeAreaHeight), fill=badgeBGColour)
-            #Paste badge
-            currentPlate.paste(badge, (0, int((badgeAreaHeight - badgeTrueHeight) / 2)))
-
-        y = (plateHeight - msgSize[1]) / 2
-        #Add text
-        draw.text((x, y), msgMain, font=font, fill=(0, 0, 0))
-
-def newPlate(msgMain, msgAlt, plateChoice, countryChoice, badgeChoice):
-
-    #Prepopulate config
-    plateJSON = os.path.join(os.path.join(sys.path[0], "plate"), plateChoice) + ".json"
-    with open(plateJSON) as pjFile:
-            plateConfig = json.load(pjFile)
-
-    countryJSON = os.path.join(os.path.join(sys.path[0], "country"), countryChoice) + ".json"
-    with open(countryJSON) as cjFile:
-            countryConfig = json.load(cjFile)
-
-    frontBGColour = (int(countryConfig["frontBGColourR"]), int(countryConfig["frontBGColourG"]), int(countryConfig["frontBGColourB"]), int(countryConfig["frontBGColourA"]))
-    rearBGColour = (int(countryConfig["rearBGColourR"]), int(countryConfig["rearBGColourG"]), int(countryConfig["rearBGColourB"]), int(countryConfig["rearBGColourA"]))
-
-    frontPlate = Image.new('RGBA', (int(plateConfig["width"]), int(plateConfig["height"])), frontBGColour)
-    rearPlate = Image.new('RGBA', (int(plateConfig["width"]), int(plateConfig["height"])), rearBGColour)
-
-    #Add content
-    addContent(frontPlate, msgMain, msgAlt, plateConfig, countryConfig, badgeChoice)
-    addContent(rearPlate, msgMain, msgAlt, plateConfig, countryConfig, badgeChoice)
-
-    #Save File Path
-    platePath = os.path.join(sys.path[0], "output")
-    platePath = os.path.join(platePath, msgMain)
-    frontPlatePath = platePath + " Front.png"
-    rearPlatePath = platePath + " Rear.png"
-
-    #Save File
-    frontPlate.save(frontPlatePath)
-    rearPlate.save(rearPlatePath)
-    del frontPlate
-    del rearPlate
-
-@app.route('/generate', methods=['GET'])
-def generate():
+@app.route('/newPlate', methods=['GET'])
+def newPlate():
     args = request.args
-    msgMain = args.get("msgMain")
-    msgAlt = args.get("msgAlt")
-    plate = args.get("plate")
     country = args.get("country")
-    badge = args.get("badge")
-    newPlate(msgMain, msgAlt, plate, country, badge)
-    return msgMain
-
-
-@app.route('/retrieve', methods=['GET'])
-def retrieve():
-    args = request.args
-    msg = args.get("msg")
+    plate_num = args.get("plateNum")
     side = args.get("side")
+    size = args.get("size")
+    badge = args.get("badge")
+    generate.draw_and_validate(country, plate_num, side, size, badge)
 
-    #Retrieve File Path
-    platePath = os.path.join(sys.path[0], "output")
-    platePath = os.path.join(platePath, msg)
-    frontPlatePath = platePath + " Front.png"
-    rearPlatePath = platePath + " Rear.png"
+    plate_image_path = os.path.join(sys.path[0], 'output', f'{country}_{plate_num}_{side}.png')
+    plate_image_path = plate_image_path.replace(' ', '_')
 
-    if side == "rear":
-        finalPlatePath = rearPlatePath
-    else:
-        finalPlatePath = frontPlatePath
+    return send_file(plate_image_path)
 
-    return send_file(finalPlatePath)
+@app.route('/loadCountries', methods=['GET'])
+@cross_origin()
+def loadCountries():
+    """
+    Load the list of countries from the config directory.
+    Each country is represented by a JSON file in the 'configs' directory.
+    Returns a JSON response with the list of countries and their display names.
+    """
+    config_dir = os.path.join(sys.path[0], 'configs')
+    countries = []
+    for filename in os.listdir(config_dir):
+        if filename.endswith('.json'):
+            filepath = os.path.join(config_dir, filename)
+            filename = filename[:-5]  # Remove the '.json' extension
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                display_name = data.get('display_name', filename)
+                countries.append({'iso_code': filename, 'display_name': display_name})
+    return jsonify(countries)
+
+@app.route('/loadSizes', methods=['GET'])
+@cross_origin()
+def loadSizes():
+    """
+    Load the plate sizes from the config file for a specific country.
+    Returns a JSON response with the plate sizes.
+    """
+    country = request.args.get("country")
+    config_file = os.path.join(sys.path[0], 'configs', f'{country}.json')
+
+    if not os.path.exists(config_file):
+        return jsonify({"error": "Country configuration not found"}), 404
+
+    with open(config_file, 'r', encoding='utf-8') as f:
+        config_data = json.load(f)
+
+    plate_sizes_dict = config_data.get('plate_sizes', {})
+    plate_sizes = [
+        {
+            "size_name": key,
+            "display_name": value.get("display_name", key)
+        }
+        for key, value in plate_sizes_dict.items()
+    ]
+    return jsonify(plate_sizes)
+
+@app.route('/loadBadges', methods=['GET'])
+@cross_origin()
+def loadBadges():
+    """
+    Load the plate badges from the config file for a specific country.
+    Returns a JSON response with the plate badges.
+    """
+    country = request.args.get("country")
+    config_file = os.path.join(sys.path[0], 'configs', f'{country}.json')
+
+    if not os.path.exists(config_file):
+        return jsonify({"error": "Country configuration not found"}), 404
+
+    with open(config_file, 'r', encoding='utf-8') as f:
+        config_data = json.load(f)
+
+    plate_badges_dict = config_data.get('badges', {})
+    plate_badges = [
+        {
+            "badge_name": key,
+            "display_name": value.get("display_name", key)
+        }
+        for key, value in plate_badges_dict.items()
+    ]
+    return jsonify(plate_badges)
+
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -190,7 +190,7 @@ def add_text(draw, plate_image, config, plate_config, size, plate_num, badge, si
 
 # Function to add a watermark to the plate image
 def add_watermark(draw, plate_image):
-    watermark_text = "TEST"
+    watermark_text = "BRITEM GRAPHICS"
     watermark_size = 10
     watermark_offset = 15
     watermark_font = "Arial Bold.ttf"
@@ -270,6 +270,7 @@ def draw_and_validate(country, plate_num, side, size, badge):
         print(f"Unable to generate plate image '{plate_num}' for the following reason:")
         print(result.strip(fail_header))
         plate_image_path = os.path.join(sys.path[0], 'output', f'{country}_{plate_num}_{side}.png')
+        plate_image_path = plate_image_path.replace(' ', '_')
         if os.path.exists(plate_image_path):
             os.remove(plate_image_path)
         print(f"Plate image file '{plate_image_path}' has been removed due to failure.")

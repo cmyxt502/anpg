@@ -27,7 +27,7 @@
             "text_size": 222,
             "corner_radius": 15,
             "rows":2,
-            "row_spacing": 10,
+            "row_spacing": 30,
             "badge":{
                 "width":92,
                 "height":203,
@@ -44,7 +44,7 @@
             "text_size": 222,
             "corner_radius": 15,
             "rows":2,
-            "row_spacing": 10,
+            "row_spacing": 30,
             "badge":{
                 "width":92,
                 "height":406,
@@ -61,7 +61,7 @@
             "text_size": 222,
             "corner_radius": 15,
             "rows":2,
-            "row_spacing": 10,
+            "row_spacing": 30,
             "badge":{
                 "width":92,
                 "height":203,
@@ -78,7 +78,7 @@
             "text_size": 222,
             "corner_radius": 15,
             "rows":1,
-            "row_spacing": 10,
+            "row_spacing": 30,
             "badge":{
                 "width":92,
                 "height":222,

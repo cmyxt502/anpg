@@ -1,11 +1,11 @@
 {
-    "display_name": "United Kingdom",
+    "display_name": "Netherlands",
     "type": "Standard",
-    "ISO_code": "GB", 
+    "ISO_code": "NL",
 
     "background": {
         "colour":{
-            "front": [244, 244, 244, 255],
+            "front": [239, 220, 4, 255],
             "rear": [239, 220, 4, 255]
         }
     },
@@ -83,73 +83,17 @@
     },
 
     "badges": {
-        "pre_brexit_gb": {
-            "display_name": "GB Badge, Pre-Brexit",
-            "background_colour": [58, 50, 133, 255],
-            "text":{
-                "content": "GB",
-                "colour": [255, 255, 255, 255],
-                "placement": [2, 1.3],
-                "font": "GB.ttf"
-            },
-            "icon":{
-                "content": "EU_star_yellow",
-                "placement": [2, 3.5]
-            }
-        },
-        "pre_brexit_uk": {
-            "display_name": "UK Badge, Pre-Brexit",
+        "eu": {
+            "display_name": "Netherlands (European Union)",
             "background_colour": [58, 50, 133, 255],
             "text": {
-                "content": "UK",
+                "content": "NL",
                 "colour": [255, 255, 255, 255],
                 "placement": [2, 1.3],
                 "font": "GB.ttf"
             },
             "icon": {
                 "content": "EU_star_yellow",
-                "placement": [2, 3.5]
-            }
-        },
-        "post_brexit_gb": {
-            "display_name": "GB Badge, Post-Brexit",
-            "background_colour": [58, 50, 133, 255],
-            "text": {
-                "content": "GB",
-                "colour": [255, 255, 255, 255],
-                "placement": [2, 1.3],
-                "font": "GB.ttf"
-            },
-            "icon": {
-                "content": "GB_flag",
-                "placement": [2, 3.5]
-            }
-        },
-        "post_brexit_uk": {
-            "display_name": "UK Badge, Post-Brexit",
-            "background_colour": [58, 50, 133, 255],
-            "text": {
-                "content": "UK",
-                "colour": [255, 255, 255, 255],
-                "placement": [2, 1.3],
-                "font": "GB.ttf"
-            },
-            "icon": {
-                "content": "GB_flag",
-                "placement": [2, 3.5]
-            }
-        },
-        "ev": {
-            "display_name": "Electric Vehicle",
-            "background_colour": [0, 255, 0, 255],
-            "text": {
-                "content": "",
-                "colour": [255, 255, 255, 255],
-                "placement": [2, 1.5],
-                "font": "GB.ttf"
-            },
-            "icon": {
-                "content": "",
                 "placement": [2, 3.5]
             }
         }

@@ -2,6 +2,70 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import os, sys, csv
 
+def add_badge_icon(plate_image, badge_config, badge_on_plate_config):
+    badge_width = badge_on_plate_config["width"]
+    badge_height = badge_on_plate_config["height"]
+    badge_starting_position = tuple(badge_on_plate_config["starting_position"])
+    
+    badge_icon_size = badge_on_plate_config["icon_size"]
+    badge_icon_file = badge_config["icon"]["content"]
+    badge_icon_file = os.path.join(sys.path[0], 'badges', 'icons', f'{badge_icon_file}.png')
+
+    if os.path.exists(badge_icon_file):
+        badge_icon = Image.open(badge_icon_file).convert("RGBA")
+        badge_icon = badge_icon.resize((badge_icon_size, badge_icon_size))
+        badge_icon_placement_x = badge_config["icon"]["placement"][0]
+        badge_icon_placement_y = badge_config["icon"]["placement"][1]
+        badge_icon_x = int((badge_width - badge_icon_size) / badge_icon_placement_x + badge_starting_position[0])
+        badge_icon_y = int((badge_height - badge_icon_size) / badge_icon_placement_y + badge_starting_position[1])
+        plate_image.paste(badge_icon, (badge_icon_x, badge_icon_y), badge_icon)
+
+def add_badge_text(draw, badge_config, badge_on_plate_config):
+    badge_width = badge_on_plate_config["width"]
+    badge_height = badge_on_plate_config["height"]
+    badge_starting_position = tuple(badge_on_plate_config["starting_position"])
+
+    badge_text = badge_config["text"]["content"]
+    badge_text_font = badge_config["text"]["font"]
+    badge_text_size = badge_on_plate_config["text_size"]
+
+    badge_font_path = os.path.join(sys.path[0], 'fonts', badge_text_font) # TODO: allocate a font path for the badge text
+    if not os.path.exists(badge_font_path):
+        print(f"Font file '{badge_config['text']['font']}' not found.") # TODO: change error message
+        return None
+    badge_font = ImageFont.truetype(badge_font_path, badge_text_size)
+    badge_text_dimension = badge_font.getbbox(badge_text)
+    
+    badge_text_colour = tuple(badge_config["text"]["colour"])
+    badge_text_placement_x = badge_config["text"]["placement"][0]
+    badge_text_placement_y = badge_config["text"]["placement"][1]
+    badge_text_x = int((badge_width - (badge_text_dimension[2] - badge_text_dimension[0])) / badge_text_placement_x + badge_starting_position[0])
+    badge_text_y = int((badge_height - (badge_text_dimension[3] - badge_text_dimension[1])) / badge_text_placement_y + badge_starting_position[1])
+    draw.text((badge_text_x, badge_text_y), badge_text, font=badge_font, fill=badge_text_colour)
+
+def add_badge(draw, plate_image, config, size, badge):
+    # Load badge config
+    if badge not in config['badges']:
+        print(f"Badge '{badge}' not found in configurations.")
+        return None
+    else:
+        badge_on_plate_config = config['plate_sizes'][size]["badge"]
+        badge_width = badge_on_plate_config["width"]
+        badge_height = badge_on_plate_config["height"]
+        badge_starting_position = tuple(badge_on_plate_config["starting_position"])
+
+        badge_config = config['badges'][badge]
+        badge_background_colour = tuple(badge_config["background_colour"])
+
+        # Draw badge
+        draw.rectangle([badge_starting_position, (badge_width + badge_starting_position[0], badge_height + badge_starting_position[1])], fill=badge_background_colour)
+
+        # Draw text (country identifier)
+        add_badge_text(draw, badge_config, badge_on_plate_config)
+
+        # Draw icon (flag)
+        add_badge_icon(plate_image, badge_config, badge_on_plate_config)
+
 # Import JSON configuration from config folder
 def draw(country, plate_num, side, size, badge):
     # Load configuration from /config folder
@@ -48,70 +112,28 @@ def draw(country, plate_num, side, size, badge):
 
     # If a badge is chosen, draw the plate number with badge offset
     else:
-        # Load badge config
-        if badge not in config['badges']:
-            print(f"Badge '{badge}' not found in configurations.")
-            return None
-        else:
-            badge_on_plate_config = config['plate_sizes'][size]["badge"]
-            badge_width = badge_on_plate_config["width"]
-            badge_height = badge_on_plate_config["height"]
-            badge_starting_position = tuple(badge_on_plate_config["starting_position"])
+        badge_width = config['plate_sizes'][size]["badge"]["width"]
+        # Draw text
+        text_colour = tuple(config['text']['colour'][side])
+        text_x = int(badge_width + (plate_image.width - badge_width) / 2 - (text_dimension[2] - text_dimension[0]) / 2) # Including offset for badge
+        text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
+        draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
 
-            badge_config = config['badges'][badge]
-            badge_background_colour = tuple(badge_config["background_colour"])
-            badge_text = badge_config["text"]["content"]
-
-            badge_text_size = badge_on_plate_config["text_size"]
-            badge_icon_size = badge_on_plate_config["icon_size"]
-
-            badge_font_path = os.path.join(sys.path[0], 'fonts', config['text']['font']) # TODO: allocate a font path for the badge text
-            if not os.path.exists(badge_font_path):
-                print(f"Font file '{config['text']['font']}' not found.") # TODO: change error message
-                return None
-            badge_font = ImageFont.truetype(badge_font_path, badge_text_size)
-            badge_text_dimension = badge_font.getbbox(badge_text)
-
-            # Draw text
-            text_colour = tuple(config['text']['colour'][side])
-            text_x = int(badge_width + (plate_image.width - badge_width) / 2 - (text_dimension[2] - text_dimension[0]) / 2) # Including offset for badge
-            text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
-
-            draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
-
-            # Draw badge
-            draw.rectangle([badge_starting_position, (badge_width + badge_starting_position[0], badge_height + badge_starting_position[1])], fill=badge_background_colour)
-
-            # Draw text (country identifier)
-            badge_text_colour = tuple(badge_config["text"]["colour"])
-            badge_text_placement_x = badge_config["text"]["placement"][0]
-            badge_text_placement_y = badge_config["text"]["placement"][1]
-            badge_text_x = int((badge_width - (badge_text_dimension[2] - badge_text_dimension[0])) / badge_text_placement_x + badge_starting_position[0])
-            badge_text_y = int((badge_height - (badge_text_dimension[3] - badge_text_dimension[1])) / badge_text_placement_y + badge_starting_position[1])
-            draw.text((badge_text_x, badge_text_y), badge_text, font=badge_font, fill=badge_text_colour)
-
-            # Draw icon (flag)
-            badge_icon_file = badge_config["icon"]["content"]
-            badge_icon_file = os.path.join(sys.path[0], 'badges', 'icons', f'{badge_icon_file}.png')
-            if os.path.exists(badge_icon_file):
-                badge_icon = Image.open(badge_icon_file).convert("RGBA")
-                badge_icon = badge_icon.resize((badge_icon_size, badge_icon_size))
-                badge_icon_placement_x = badge_config["icon"]["placement"][0]
-                badge_icon_placement_y = badge_config["icon"]["placement"][1]
-                badge_icon_x = int((badge_width - badge_icon_size) / badge_icon_placement_x + badge_starting_position[0])
-                badge_icon_y = int((badge_height - badge_icon_size) / badge_icon_placement_y + badge_starting_position[1])
-                plate_image.paste(badge_icon, (badge_icon_x, badge_icon_y), badge_icon)
+        # Add badge to the plate
+        add_badge(draw, plate_image, config, size, badge)
 
     # Save the image to file
     plate_image_path = os.path.join(sys.path[0], 'output', f'{country}_{plate_num}_{side}.png')
     os.makedirs(os.path.dirname(plate_image_path), exist_ok=True)
     plate_image.save(plate_image_path)
 
-    return 0
+    return plate_image_path
 
 # Sample usage
-#draw('GB', 'BX22 ANC', 'rear', 'oblong', 'ev')
+draw('GB', 'BX22 BEM', 'rear', 'oblong', 'ev')
 draw('GB', 'BX25 BEM', 'front', 'oblong', 'pre_brexit_gb')
 draw('GB', 'BX24 BEM', 'rear', 'square_lowerbadge', 'pre_brexit_gb')
 draw('GB', 'BX73 BEM', 'front', 'oblong', 'none')
 draw('GB', 'BX72 BEM', 'rear', 'square_fullbadge', 'pre_brexit_gb')
+draw('NL', '99-BEM-9', 'rear', 'oblong', 'eu')
+draw('NL', '99-BEM-9', 'front', 'oblong', 'eu')

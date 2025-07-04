@@ -93,8 +93,27 @@ def add_text(draw, plate_image, config, size, plate_num, badge, side):
         text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
         draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
 
+def add_watermark(draw, plate_image, config):
+    watermark_text = "BRITEM GRAPHICS"
+    watermark_size = 10
+    watermark_offset = 15
+    watermark_font = "Arial Bold.ttf"
+    watermark_font_path = os.path.join(sys.path[0], 'fonts', watermark_font)
+    if not os.path.exists(watermark_font_path):
+        print(f"Font file '{watermark_font}' not found.")
+        return None
+    watermark_font = ImageFont.truetype(watermark_font_path, watermark_size)
+    watermark_dimension = watermark_font.getbbox(watermark_text) # Result (left, top, right, bottom) bounding box
+
+    watermark_colour = tuple([0, 0, 0])
+    watermark_x = int(plate_image.width / 2 - (watermark_dimension[2] - watermark_dimension[0]) / 2)
+    watermark_y = int(plate_image.height - watermark_offset)
+    draw.text((watermark_x, watermark_y), watermark_text, font=watermark_font, fill=watermark_colour)
+
 # Import JSON configuration from config folder
 def draw(country, plate_num, side, size, badge):
+    watermark = True  # Set to False if you don't want a watermark
+
     # Load configuration from /config folder
     config_file = os.path.join(sys.path[0], 'configs', f'{country}.json')
     if not os.path.exists(config_file):
@@ -124,6 +143,8 @@ def draw(country, plate_num, side, size, badge):
 
     # Add text to the plate
     add_text(draw, plate_image, config, size, plate_num, badge, side)
+    if watermark:
+        add_watermark(draw, plate_image, config)
 
     # Add badge to the plate
     if badge != "none":

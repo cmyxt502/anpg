@@ -156,6 +156,19 @@
                 "content": "",
                 "placement": [2, 3.5]
             }
+        },
+        "none": {
+            "display_name": "No Badge",
+            "background_colour": [0, 0, 0, 255],
+            "text": {
+                "content": "",
+                "colour": [255, 255, 255, 255],
+                "placement": [2, 1.5]
+            },
+            "icon": {
+                "content": "",
+                "placement": [2, 3.5]
+            }
         }
     }
 }

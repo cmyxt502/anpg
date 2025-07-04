@@ -15,7 +15,8 @@
             "front": [0, 0, 0],
             "rear": [0, 0, 0]
         },
-        "font": "GB.ttf"
+        "font": "GB.ttf",
+        "split_char": "-"
     },
 
     "plate_sizes": {
@@ -31,6 +32,7 @@
                 "height":203,
                 "starting_position": [0,0],
                 "text_size": 50,
+                "text_font": "Arial Bold.ttf",
                 "icon_size": 65
             }
         },
@@ -46,6 +48,7 @@
                 "height":406,
                 "starting_position": [0,0],
                 "text_size": 50,
+                "text_font": "Arial Bold.ttf",
                 "icon_size": 65
             }
         },
@@ -61,6 +64,7 @@
                 "height":203,
                 "starting_position": [0,203],
                 "text_size": 50,
+                "text_font": "Arial Bold.ttf",
                 "icon_size": 65
             }
         },
@@ -76,6 +80,7 @@
                 "height":222,
                 "starting_position": [0,0],
                 "text_size": 50,
+                "text_font": "Arial Bold.ttf",
                 "icon_size": 65
             }
         }
@@ -89,8 +94,7 @@
             "text": {
                 "content": "NL",
                 "colour": [255, 255, 255, 255],
-                "placement": [2, 1.3],
-                "font": "GB.ttf"
+                "placement": [2, 1.3]
             },
             "icon": {
                 "content": "EU_star_yellow",

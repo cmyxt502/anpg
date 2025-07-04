@@ -2,6 +2,37 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import os, sys
 
+#Split a plate number into several sections, using a specified split character and number of parts.
+def split_text(input_string, split_char, num_parts):
+    # Split the input string by the specified character
+    parts = input_string.split(split_char)
+
+    # If the number of parts is greater than the number of splits, return the original string num_parts times in a list
+    if num_parts > len(parts):
+        return [input_string] * num_parts
+
+    if not parts or num_parts <= 0:
+        return []
+
+    # If there are fewer parts than num_parts, pad with empty strings
+    if len(parts) < num_parts:
+        parts += [''] * (num_parts - len(parts))
+
+    # Calculate how many parts per section (distribute as evenly as possible)
+    avg = len(parts) // num_parts
+    rem = len(parts) % num_parts
+
+    result = []
+    idx = 0
+    for i in range(num_parts):
+        # Distribute the remainder among the first 'rem' sections
+        count = avg + (1 if i < rem else 0)
+        section = parts[idx:idx+count]
+        result.append(split_char.join(section))
+        idx += count
+    
+    return result
+
 # Function to add badge icon to the plate
 def add_badge_icon(plate_image, badge_config, badge_on_plate_config):
     badge_width = badge_on_plate_config["width"]
@@ -28,7 +59,7 @@ def add_badge_text(draw, badge_config, badge_on_plate_config):
     badge_starting_position = tuple(badge_on_plate_config["starting_position"])
 
     badge_text = badge_config["text"]["content"]
-    badge_text_font = badge_config["text"]["font"]
+    badge_text_font = badge_on_plate_config["text_font"]
     badge_text_size = badge_on_plate_config["text_size"]
 
     badge_font_path = os.path.join(sys.path[0], 'fonts', badge_text_font) # TODO: allocate a font path for the badge text
@@ -69,31 +100,56 @@ def add_badge(draw, plate_image, config, size, badge):
         # Draw icon (flag)
         add_badge_icon(plate_image, badge_config, badge_on_plate_config)
 
-def add_text(draw, plate_image, config, size, plate_num, badge, side):
+def add_text(draw, plate_image, config, plate_config, size, plate_num, badge, side):
     text_font_path = os.path.join(sys.path[0], 'fonts', config['text']['font'])
     if not os.path.exists(text_font_path):
         print(f"Font file '{config['text']['font']}' not found.")
         return None
-    text_font = ImageFont.truetype(text_font_path, config["plate_sizes"][size]['text_size'])
+    text_font = ImageFont.truetype(text_font_path, plate_config['text_size'])
     text_dimension = text_font.getbbox(plate_num) # Result (left, top, right, bottom) bounding box
 
-        # If no badge is chosen, draw the plate number at the centre of image
-    if badge == "none":
-        text_colour = tuple(config['text']['colour'][side])
-        text_x = int(plate_image.width / 2 - (text_dimension[2] - text_dimension[0]) / 2)
-        text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
-        draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
+    text_rows = plate_config["rows"]
+    split_char = config["text"]["split_char"]
+    if text_rows > 1:
+        text_split = split_text(plate_num, split_char, text_rows)
 
-    # If a badge is chosen, draw the plate number with badge offset
+        for row in text_split:
+            row_dimension = text_font.getbbox(row)
+
+            # If no badge is chosen, draw the plate number at the centre of image
+            if badge == "none":
+                text_colour = tuple(config['text']['colour'][side])
+                text_x = int(plate_image.width / 2 - (row_dimension[2] - row_dimension[0]) / 2)
+                text_y = int(plate_image.height / 2 - (row_dimension[3] - row_dimension[1]) / 2)
+                draw.text((text_x, text_y), row, font=text_font, fill=text_colour)
+
+            # If a badge is chosen, draw the plate number with badge offset
+            else:
+                badge_width = config['plate_sizes'][size]["badge"]["width"]
+                # Draw text
+                text_colour = tuple(config['text']['colour'][side])
+                text_x = int(badge_width + (plate_image.width - badge_width) / 2 - (row_dimension[2] - row_dimension[0]) / 2) # Including offset for badge
+                text_y = int(plate_image.height / 2 - (row_dimension[3] - row_dimension[1]) / 2)
+                draw.text((text_x, text_y), row, font=text_font, fill=text_colour)
+
     else:
-        badge_width = config['plate_sizes'][size]["badge"]["width"]
-        # Draw text
-        text_colour = tuple(config['text']['colour'][side])
-        text_x = int(badge_width + (plate_image.width - badge_width) / 2 - (text_dimension[2] - text_dimension[0]) / 2) # Including offset for badge
-        text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
-        draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
+        # If no badge is chosen, draw the plate number at the centre of image
+        if badge == "none":
+            text_colour = tuple(config['text']['colour'][side])
+            text_x = int(plate_image.width / 2 - (text_dimension[2] - text_dimension[0]) / 2)
+            text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
+            draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
 
-def add_watermark(draw, plate_image, config):
+        # If a badge is chosen, draw the plate number with badge offset
+        else:
+            badge_width = config['plate_sizes'][size]["badge"]["width"]
+            # Draw text
+            text_colour = tuple(config['text']['colour'][side])
+            text_x = int(badge_width + (plate_image.width - badge_width) / 2 - (text_dimension[2] - text_dimension[0]) / 2) # Including offset for badge
+            text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
+            draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
+
+def add_watermark(draw, plate_image):
     watermark_text = "BRITEM GRAPHICS"
     watermark_size = 10
     watermark_offset = 15
@@ -128,23 +184,23 @@ def draw(country, plate_num, side, size, badge):
         print(f"Size '{size}' not found in configuration.")
         return None
 
-    plate_size = config['plate_sizes'][size]
+    plate_config = config['plate_sizes'][size]
 
     plate_background_colour = config['background']['colour'][side]
     plate_background_colour = tuple(plate_background_colour)
 
     # Create a new image for the plate
-    plate_width = plate_size['width']
-    plate_height = plate_size['height']
+    plate_width = plate_config['width']
+    plate_height = plate_config['height']
 
     # Create a new image with the specified background colour
     plate_image = Image.new('RGBA', (plate_width, plate_height), plate_background_colour)
     draw = ImageDraw.Draw(plate_image)
 
     # Add text to the plate
-    add_text(draw, plate_image, config, size, plate_num, badge, side)
+    add_text(draw, plate_image, config, plate_config, size, plate_num, badge, side)
     if watermark:
-        add_watermark(draw, plate_image, config)
+        add_watermark(draw, plate_image)
 
     # Add badge to the plate
     if badge != "none":

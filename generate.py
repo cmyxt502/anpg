@@ -265,10 +265,6 @@ def draw(country, plate_num, side, size, badge):
     return plate_image_path
 
 def draw_and_validate(country, plate_num, side, size, badge):
-    """
-    Draws a plate and validates the output.
-    Returns the path to the saved image or an error message.
-    """
     result = draw(country, plate_num, side, size, badge)
     if result.startswith(fail_header):
         print(f"Unable to generate plate image '{plate_num}' for the following reason:")
@@ -283,15 +279,6 @@ def draw_and_validate(country, plate_num, side, size, badge):
         return "Pass"
 
 # Sample usage (generates several example plates)
-
-#print(draw('GB', 'BX22 OEM', 'rear', 'oblong', 'ev'))
-#print(draw('GB', 'BX25 OEM', 'front', 'oblong', 'post_brexit_uk'))
-draw_and_validate('GB', 'BX25 OEN', 'front', 'oblong', 'pre_brexit_gb')
-draw_and_validate('GB', 'BX2444 OOEEMM', 'rear', 'square_lowerbadge', 'pre_brexit_gb')
-#print(draw('GB', 'BX73 OEM', 'front', 'oblong', 'none'))
-#print(draw('GB', 'BX72 OEM', 'rear', 'square_fullbadge', 'pre_brexit_gb'))
-#print(draw('NL', '99-OEM-9', 'rear', 'oblong', 'eu'))
-#print(draw('NL', '99-OEM-9', 'front', 'oblong', 'eu'))
 
 if __name__ == "__main__":
     country = input("Enter country code (e.g., 'GB'): ").strip()

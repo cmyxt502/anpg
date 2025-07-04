@@ -1,7 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
 import json
-import os, sys, csv
+import os, sys
 
+# Function to add badge icon to the plate
 def add_badge_icon(plate_image, badge_config, badge_on_plate_config):
     badge_width = badge_on_plate_config["width"]
     badge_height = badge_on_plate_config["height"]
@@ -20,6 +21,7 @@ def add_badge_icon(plate_image, badge_config, badge_on_plate_config):
         badge_icon_y = int((badge_height - badge_icon_size) / badge_icon_placement_y + badge_starting_position[1])
         plate_image.paste(badge_icon, (badge_icon_x, badge_icon_y), badge_icon)
 
+# Function to add badge text to the plate
 def add_badge_text(draw, badge_config, badge_on_plate_config):
     badge_width = badge_on_plate_config["width"]
     badge_height = badge_on_plate_config["height"]
@@ -43,6 +45,7 @@ def add_badge_text(draw, badge_config, badge_on_plate_config):
     badge_text_y = int((badge_height - (badge_text_dimension[3] - badge_text_dimension[1])) / badge_text_placement_y + badge_starting_position[1])
     draw.text((badge_text_x, badge_text_y), badge_text, font=badge_font, fill=badge_text_colour)
 
+# Function to add badge to the plate
 def add_badge(draw, plate_image, config, size, badge):
     # Load badge config
     if badge not in config['badges']:
@@ -66,6 +69,30 @@ def add_badge(draw, plate_image, config, size, badge):
         # Draw icon (flag)
         add_badge_icon(plate_image, badge_config, badge_on_plate_config)
 
+def add_text(draw, plate_image, config, size, plate_num, badge, side):
+    text_font_path = os.path.join(sys.path[0], 'fonts', config['text']['font'])
+    if not os.path.exists(text_font_path):
+        print(f"Font file '{config['text']['font']}' not found.")
+        return None
+    text_font = ImageFont.truetype(text_font_path, config["plate_sizes"][size]['text_size'])
+    text_dimension = text_font.getbbox(plate_num) # Result (left, top, right, bottom) bounding box
+
+        # If no badge is chosen, draw the plate number at the centre of image
+    if badge == "none":
+        text_colour = tuple(config['text']['colour'][side])
+        text_x = int(plate_image.width / 2 - (text_dimension[2] - text_dimension[0]) / 2)
+        text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
+        draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
+
+    # If a badge is chosen, draw the plate number with badge offset
+    else:
+        badge_width = config['plate_sizes'][size]["badge"]["width"]
+        # Draw text
+        text_colour = tuple(config['text']['colour'][side])
+        text_x = int(badge_width + (plate_image.width - badge_width) / 2 - (text_dimension[2] - text_dimension[0]) / 2) # Including offset for badge
+        text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
+        draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
+
 # Import JSON configuration from config folder
 def draw(country, plate_num, side, size, badge):
     # Load configuration from /config folder
@@ -87,14 +114,6 @@ def draw(country, plate_num, side, size, badge):
     plate_background_colour = config['background']['colour'][side]
     plate_background_colour = tuple(plate_background_colour)
 
-    # Load font
-    text_font_path = os.path.join(sys.path[0], 'fonts', config['text']['font'])
-    if not os.path.exists(text_font_path):
-        print(f"Font file '{config['text']['font']}' not found.")
-        return None
-    text_font = ImageFont.truetype(text_font_path, config["plate_sizes"][size]['text_size'])
-    text_dimension = text_font.getbbox(plate_num) # Result (left, top, right, bottom) bounding box
-
     # Create a new image for the plate
     plate_width = plate_size['width']
     plate_height = plate_size['height']
@@ -103,23 +122,11 @@ def draw(country, plate_num, side, size, badge):
     plate_image = Image.new('RGBA', (plate_width, plate_height), plate_background_colour)
     draw = ImageDraw.Draw(plate_image)
 
-    # If no badge is chosen, draw the plate number at the centre of image
-    if badge == "none":
-        text_colour = tuple(config['text']['colour'][side])
-        text_x = int(plate_image.width / 2 - (text_dimension[2] - text_dimension[0]) / 2)
-        text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
-        draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
+    # Add text to the plate
+    add_text(draw, plate_image, config, size, plate_num, badge, side)
 
-    # If a badge is chosen, draw the plate number with badge offset
-    else:
-        badge_width = config['plate_sizes'][size]["badge"]["width"]
-        # Draw text
-        text_colour = tuple(config['text']['colour'][side])
-        text_x = int(badge_width + (plate_image.width - badge_width) / 2 - (text_dimension[2] - text_dimension[0]) / 2) # Including offset for badge
-        text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
-        draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
-
-        # Add badge to the plate
+    # Add badge to the plate
+    if badge != "none":
         add_badge(draw, plate_image, config, size, badge)
 
     # Save the image to file

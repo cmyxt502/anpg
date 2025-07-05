@@ -2,9 +2,9 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import os, sys
 
-fail_header = "Fail: "
-pass_header = "Pass: "
-error_header = "Error: "
+FAIL_HEADER = "Fail: "
+PASS_HEADER = "Pass: "
+ERROR_HEADER = "Error: "
 
 # Split a plate number into several sections, using a specified split character and number of parts.
 def split_text(input_string, split_char, num_parts):
@@ -62,8 +62,8 @@ def add_badge_icon(plate_image, badge_config, badge_on_plate_config):
         badge_icon_y = int((badge_height - badge_icon_height) / badge_icon_placement_y + badge_starting_position[1])
         # Paste the icon onto the plate image
         plate_image.paste(badge_icon, (badge_icon_x, badge_icon_y), badge_icon)
-    
-    return pass_header
+
+    return PASS_HEADER
 
 # Function to add badge text (e.g., country code) to the plate
 def add_badge_text(draw, badge_config, badge_on_plate_config):
@@ -93,7 +93,7 @@ def add_badge_text(draw, badge_config, badge_on_plate_config):
     # Draw the badge text
     draw.text((badge_text_x, badge_text_y), badge_text, font=badge_font, fill=badge_text_colour)
 
-    return pass_header
+    return PASS_HEADER
 
 # Function to add the badge (background, text, and icon) to the plate
 def add_badge(draw, plate_image, config, size, badge):
@@ -118,15 +118,15 @@ def add_badge(draw, plate_image, config, size, badge):
 
         # Draw badge icon (e.g., flag)
         add_badge_icon(plate_image, badge_config, badge_on_plate_config)
-    
-    return pass_header
+
+    return PASS_HEADER
 
 # Function to add the main plate number text to the plate
 def add_text(draw, plate_image, config, plate_config, size, plate_num, badge, side):
     # Path to the font file for plate text
     text_font_path = os.path.join(sys.path[0], 'fonts', config['text']['font'])
     if not os.path.exists(text_font_path):
-        msg = f"{fail_header} Font file '{config['text']['font']}' not found."
+        msg = f"{FAIL_HEADER} Font file '{config['text']['font']}' not found."
         return msg
     text_font = ImageFont.truetype(text_font_path, plate_config['text_size'])
     text_dimension = text_font.getbbox(plate_num) # (left, top, right, bottom) bounding box
@@ -148,7 +148,7 @@ def add_text(draw, plate_image, config, plate_config, size, plate_num, badge, si
         for row in text_split:
             row_dimension = text_font.getbbox(row)
             if row_dimension[2] - row_dimension[0] > plate_image.width:
-                msg = f"{fail_header} '{row}' exceeds plate width. Please adjust the plate number or configuration."
+                msg = f"{FAIL_HEADER} '{row}' exceeds plate width. Please adjust the plate number or configuration."
                 return msg
 
             # If no badge is chosen, draw the plate number at the centre of image
@@ -186,37 +186,37 @@ def add_text(draw, plate_image, config, plate_config, size, plate_num, badge, si
             text_y = int(plate_image.height / 2 - (text_dimension[3] - text_dimension[1]) / 2)
             draw.text((text_x, text_y), plate_num, font=text_font, fill=text_colour)
 
-    return pass_header
+    return PASS_HEADER
 
 # Function to add a watermark to the plate image
 def add_watermark(draw, plate_image):
-    watermark_text = "BRITEM GRAPHICS"
-    watermark_size = 10
-    watermark_offset = 15
-    watermark_font = "Arial Bold.ttf"
-    watermark_font_path = os.path.join(sys.path[0], 'fonts', watermark_font)
-    if not os.path.exists(watermark_font_path):
-        msg = f"{fail_header} Font file '{watermark_font}' not found."
+    WATERMARK_TEXT = "BRITEM GRAPHICS"
+    WATERMARK_SIZE = 10
+    WATERMARK_OFFSET = 15
+    WATERMARK_FONT = "Arial Bold.ttf"
+    WATERMARK_FONT_PATH = os.path.join(sys.path[0], 'fonts', WATERMARK_FONT)
+    if not os.path.exists(WATERMARK_FONT_PATH):
+        msg = f"{FAIL_HEADER} Font file '{WATERMARK_FONT}' not found."
         return msg
-    watermark_font = ImageFont.truetype(watermark_font_path, watermark_size)
-    watermark_dimension = watermark_font.getbbox(watermark_text) # (left, top, right, bottom) bounding box
+    watermark_font = ImageFont.truetype(WATERMARK_FONT_PATH, WATERMARK_SIZE)
+    watermark_dimension = watermark_font.getbbox(WATERMARK_TEXT) # (left, top, right, bottom) bounding box
 
     watermark_colour = tuple([0, 0, 0])
     # Center watermark horizontally, place near bottom
     watermark_x = int(plate_image.width / 2 - (watermark_dimension[2] - watermark_dimension[0]) / 2)
-    watermark_y = int(plate_image.height - watermark_offset)
-    draw.text((watermark_x, watermark_y), watermark_text, font=watermark_font, fill=watermark_colour)
+    watermark_y = int(plate_image.height - WATERMARK_OFFSET)
+    draw.text((watermark_x, watermark_y), WATERMARK_TEXT, font=watermark_font, fill=watermark_colour)
 
-    return pass_header
+    return PASS_HEADER
 
 # Main function to draw a plate image for a given country, plate number, side, size, and badge
 def draw(country, plate_num, side, size, badge):
-    watermark = True  # Set to False if you don't want a watermark
+    WATERMARK = True  # Set to False if you don't want a watermark
 
     # Load configuration from /config folder
     config_file = os.path.join(sys.path[0], 'configs', f'{country}.json')
     if not os.path.exists(config_file):
-        msg = f"{fail_header} Configuration file for {country} not found."
+        msg = f"{FAIL_HEADER} Configuration file for {country} not found."
         return msg
 
     with open(config_file, 'r') as file:
@@ -224,7 +224,7 @@ def draw(country, plate_num, side, size, badge):
     
     # Get plate size from configuration
     if size not in config['plate_sizes']:
-        msg = f"{fail_header} Size '{size}' not found in configuration."
+        msg = f"{FAIL_HEADER} Size '{size}' not found in configuration."
         return msg
 
     plate_config = config['plate_sizes'][size]
@@ -242,18 +242,18 @@ def draw(country, plate_num, side, size, badge):
 
     # Add text to the plate
     add_text_result = add_text(draw, plate_image, config, plate_config, size, plate_num, badge, side)
-    if add_text_result.startswith(fail_header):
+    if add_text_result.startswith(FAIL_HEADER):
         return add_text_result
-    
-    if watermark:
+
+    if WATERMARK:
         add_watermark_result = add_watermark(draw, plate_image)
-        if add_watermark_result.startswith(fail_header):
+        if add_watermark_result.startswith(FAIL_HEADER):
             return add_watermark_result
 
     # Add badge to the plate (if any)
     if badge != "none":
         add_badge_result = add_badge(draw, plate_image, config, size, badge)
-        if add_badge_result.startswith(fail_header):
+        if add_badge_result.startswith(FAIL_HEADER):
             return add_badge_result
 
     # Save the image to file
@@ -266,9 +266,9 @@ def draw(country, plate_num, side, size, badge):
 
 def draw_and_validate(country, plate_num, side, size, badge):
     result = draw(country, plate_num, side, size, badge)
-    if result.startswith(fail_header):
+    if result.startswith(FAIL_HEADER):
         print(f"Unable to generate plate image '{plate_num}' for the following reason:")
-        print(result.strip(fail_header))
+        print(result.strip(FAIL_HEADER))
         plate_image_path = os.path.join(sys.path[0], 'output', f'{country}_{plate_num}_{side}.png')
         plate_image_path = plate_image_path.replace(' ', '_')
         if os.path.exists(plate_image_path):

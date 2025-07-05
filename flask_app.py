@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import cross_origin
 import os, sys, json
-import generate
+from anpg import generate
 
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ def newPlate():
     badge = args.get("badge")
     generate.draw_and_validate(country, plate_num, side, size, badge)
 
-    plate_image_path = os.path.join(sys.path[0], 'output', f'{country}_{plate_num}_{side}.png')
+    plate_image_path = os.path.join(sys.path[0], 'anpg', 'outputs', f'{country}_{plate_num}_{side}.png')
     plate_image_path = plate_image_path.replace(' ', '_')
 
     return send_file(plate_image_path)
@@ -28,7 +28,7 @@ def loadCountries():
     Each country is represented by a JSON file in the 'configs' directory.
     Returns a JSON response with the list of countries and their display names.
     """
-    config_dir = os.path.join(sys.path[0], 'configs')
+    config_dir = os.path.join(sys.path[0], 'anpg', 'configs')
     countries = []
     for filename in os.listdir(config_dir):
         if filename.endswith('.json'):
@@ -48,7 +48,7 @@ def loadSizes():
     Returns a JSON response with the plate sizes.
     """
     country = request.args.get("country")
-    config_file = os.path.join(sys.path[0], 'configs', f'{country}.json')
+    config_file = os.path.join(sys.path[0], 'anpg', 'configs', f'{country}.json')
 
     if not os.path.exists(config_file):
         return jsonify({"error": "Country configuration not found"}), 404
@@ -74,7 +74,7 @@ def loadBadges():
     Returns a JSON response with the plate badges.
     """
     country = request.args.get("country")
-    config_file = os.path.join(sys.path[0], 'configs', f'{country}.json')
+    config_file = os.path.join(sys.path[0], 'anpg', 'configs', f'{country}.json')
 
     if not os.path.exists(config_file):
         return jsonify({"error": "Country configuration not found"}), 404

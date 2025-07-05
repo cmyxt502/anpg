@@ -46,7 +46,7 @@ def add_badge_icon(plate_image, badge_config, badge_on_plate_config):
     badge_icon_size = badge_on_plate_config["icon_size"]
     badge_icon_file = badge_config["icon"]["content"]
     # Build the path to the icon image file
-    badge_icon_file = os.path.join(sys.path[0], 'badges', 'icons', f'{badge_icon_file}.png')
+    badge_icon_file = os.path.join(sys.path[0], 'anpg', 'icons', f'{badge_icon_file}.png')
 
     # Only add the icon if the file exists
     if os.path.exists(badge_icon_file):
@@ -76,7 +76,7 @@ def add_badge_text(draw, badge_config, badge_on_plate_config):
     badge_text_size = badge_on_plate_config["text_size"]
 
     # Path to the font file for badge text
-    badge_font_path = os.path.join(sys.path[0], 'fonts', badge_text_font)
+    badge_font_path = os.path.join(sys.path[0], 'anpg', 'fonts', badge_text_font)
     if not os.path.exists(badge_font_path):
         msg = f"Font file '{badge_config['text']['font']}' not found."
         return msg
@@ -124,7 +124,7 @@ def add_badge(draw, plate_image, config, size, badge):
 # Function to add the main plate number text to the plate
 def add_text(draw, plate_image, config, plate_config, size, plate_num, badge, side):
     # Path to the font file for plate text
-    text_font_path = os.path.join(sys.path[0], 'fonts', config['text']['font'])
+    text_font_path = os.path.join(sys.path[0], 'anpg', 'fonts', config['text']['font'])
     if not os.path.exists(text_font_path):
         msg = f"{FAIL_HEADER} Font file '{config['text']['font']}' not found."
         return msg
@@ -194,7 +194,7 @@ def add_watermark(draw, plate_image):
     WATERMARK_SIZE = 10
     WATERMARK_OFFSET = 15
     WATERMARK_FONT = "Arial Bold.ttf"
-    WATERMARK_FONT_PATH = os.path.join(sys.path[0], 'fonts', WATERMARK_FONT)
+    WATERMARK_FONT_PATH = os.path.join(sys.path[0], 'anpg', 'fonts', WATERMARK_FONT)
     if not os.path.exists(WATERMARK_FONT_PATH):
         msg = f"{FAIL_HEADER} Font file '{WATERMARK_FONT}' not found."
         return msg
@@ -214,7 +214,7 @@ def draw(country, plate_num, side, size, badge):
     WATERMARK = True  # Set to False if you don't want a watermark
 
     # Load configuration from /config folder
-    config_file = os.path.join(sys.path[0], 'configs', f'{country}.json')
+    config_file = os.path.join(sys.path[0], 'anpg', 'configs', f'{country}.json')
     if not os.path.exists(config_file):
         msg = f"{FAIL_HEADER} Configuration file for {country} not found."
         return msg
@@ -257,7 +257,7 @@ def draw(country, plate_num, side, size, badge):
             return add_badge_result
 
     # Save the image to file
-    plate_image_path = os.path.join(sys.path[0], 'output', f'{country}_{plate_num}_{side}.png')
+    plate_image_path = os.path.join(sys.path[0], 'anpg', 'outputs', f'{country}_{plate_num}_{side}.png')
     plate_image_path = plate_image_path.replace(' ', '_')  # Replace spaces with underscores in the filename
     os.makedirs(os.path.dirname(plate_image_path), exist_ok=True)
     plate_image.save(plate_image_path)
@@ -269,7 +269,7 @@ def draw_and_validate(country, plate_num, side, size, badge):
     if result.startswith(FAIL_HEADER):
         print(f"Unable to generate plate image '{plate_num}' for the following reason:")
         print(result.strip(FAIL_HEADER))
-        plate_image_path = os.path.join(sys.path[0], 'output', f'{country}_{plate_num}_{side}.png')
+        plate_image_path = os.path.join(sys.path[0], 'anpg', 'outputs', f'{country}_{plate_num}_{side}.png')
         plate_image_path = plate_image_path.replace(' ', '_')
         if os.path.exists(plate_image_path):
             os.remove(plate_image_path)

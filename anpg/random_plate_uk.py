@@ -60,7 +60,7 @@ if __name__ == "__main__":
             print("Fail")
         country = 'GB' # ISO 3166 irrespective of actual GB or NI
         # Load the ISO 3166 GB config file
-        config_file = os.path.join(sys.path[0], 'configs', f'{country}.json')
+        config_file = os.path.join(sys.path[0], 'anpg', 'configs', f'{country}.json')
         with open(config_file, 'r') as f:
             gb_config = json.load(f)
         # Randomly select a plate size and badge from the config

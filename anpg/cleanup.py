@@ -2,7 +2,7 @@ import os
 import time
 import sys
 
-OUTPUT_DIR = os.path.join(sys.path[0], 'output')
+OUTPUT_DIR = os.path.join(sys.path[0], 'anpg', 'outputs')
 AGE_LIMIT = 24
 
 age_limit_seconds = AGE_LIMIT * 60 * 60  # Convert to seconds
